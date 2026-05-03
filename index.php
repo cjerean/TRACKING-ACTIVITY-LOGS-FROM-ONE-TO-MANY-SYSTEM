@@ -1,3 +1,20 @@
+<?php
+require_once 'core/dbconfig.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+require_once 'core/models.php';
+
+$edit_room = isset($_GET['edit_room']) ? (int) $_GET['edit_room'] : null;
+$edit_player = isset($_GET['edit_player']) ? (int) $_GET['edit_player'] : null;
+
+$rooms = Room::getAll($pdo);
+?>
+
 <!DOCTYPE html>
 
 <head>
@@ -9,21 +26,25 @@
 
 <body class="bg-gray-100 text-gray-800 font-sans p-6">
     <div class="max-w-6xl mx-auto space-y-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">Nexus</h1>
-            <p class="text-gray-600 mt-2">Room & Player Management</p>
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900">Nexus</h1>
+                <p class="text-gray-600 mt-2">Room & Player Management</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">Welcome,</p>
+                    <p class="font-semibold"><?php echo htmlspecialchars($_SESSION['username']); ?></p>
+                    <p class="text-xs text-gray-500"><?php echo htmlspecialchars($_SESSION['role']); ?></p>
+                </div>
+                <form action="core/formhandler.php" method="post" class="inline">
+                    <input type="hidden" name="action" value="logout">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-200">
+                        Logout
+                    </button>
+                </form>
+            </div>
         </header>
-
-        <main>
-            <?php
-            require_once 'core/dbconfig.php';
-            require_once 'core/models.php';
-
-            $edit_room = isset($_GET['edit_room']) ? (int) $_GET['edit_room'] : null;
-            $edit_player = isset($_GET['edit_player']) ? (int) $_GET['edit_player'] : null;
-
-            $rooms = Room::getAll($pdo);
-            ?>
 
             <section class="bg-white p-6 rounded-lg shadow-md mb-8">
                 <h2 class="text-2xl font-semibold mb-4">Create New Room</h2>
@@ -176,6 +197,59 @@
                 <?php endforeach; ?>
             </div>
         </main>
+
+        <?php if ($_SESSION['role'] === 'admin'): ?>
+            <section class="bg-white p-6 rounded-lg shadow-md mt-8">
+                <h2 class="text-2xl font-semibold mb-4">Recent Activity Log</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Table</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <?php
+                            $audit_logs = User::getAuditLog($pdo, 20);
+                            foreach ($audit_logs as $log):
+                            ?>
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                        <?php echo htmlspecialchars($log['username']); ?>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            <?php
+                                            switch($log['action']) {
+                                                case 'INSERT': echo 'bg-green-100 text-green-800'; break;
+                                                case 'UPDATE': echo 'bg-blue-100 text-blue-800'; break;
+                                                case 'DELETE': echo 'bg-red-100 text-red-800'; break;
+                                                default: echo 'bg-gray-100 text-gray-800';
+                                            }
+                                            ?>">
+                                            <?php echo htmlspecialchars($log['action']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                        <?php echo htmlspecialchars($log['table_name']); ?>
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 max-w-xs truncate">
+                                        <?php echo htmlspecialchars($log['action_details'] ?? 'N/A'); ?>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo date('M j, H:i', strtotime($log['created_at'])); ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <?php endif; ?>
 
         <?php if ($edit_player): ?>
             <?php $player = Player::getById($pdo, $edit_player); ?>

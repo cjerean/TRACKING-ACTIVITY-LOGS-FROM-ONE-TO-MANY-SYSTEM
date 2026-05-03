@@ -1,13 +1,63 @@
 <?php
-
 require_once 'dbconfig.php';
 require_once 'models.php';
 
 $action = $_POST['action'] ?? '';
 
 switch ($action) {
+    case 'register':
+        $password = $_POST['password'];
+        $confirm_password = $_POST['confirm_password'];
+        $username = trim($_POST['username']);
+        $email = trim($_POST['email']);
+
+        if ($password !== $confirm_password) {
+            header("Location: ../register.php?error=Passwords do not match");
+            exit();
+        }
+
+        if (strlen($password) < 6) {
+            header("Location: ../register.php?error=Password must be at least 6 characters");
+            exit();
+        }
+
+        if (User::usernameExists($pdo, $username)) {
+            header("Location: ../register.php?error=Username already exists");
+            exit();
+        }
+
+        if (User::emailExists($pdo, $email)) {
+            header("Location: ../register.php?error=Email already exists");
+            exit();
+        }
+
+        if (User::register($pdo, $username, $email, $password)) {
+            header("Location: ../login.php?message=Registration successful");
+        } else {
+            header("Location: ../register.php?error=Registration failed");
+        }
+        break;
+
+    case 'login':
+        $user = User::login($pdo, $_POST['username'], $_POST['password']);
+        if ($user) {
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['role'] = $user['role'];
+            header("Location: ../index.php");
+        } else {
+            header("Location: ../login.php?error=Invalid credentials");
+        }
+        break;
+
+    case 'logout':
+        session_destroy();
+        header("Location: ../login.php");
+        break;
+
     case 'create_room':
-        if (Room::insert($pdo, $_POST['room_name'], $_POST['theme'], $_POST['max_capacity'])) {
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (Room::insert($pdo, $_POST['room_name'], $_POST['theme'], $_POST['max_capacity'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Room creation failed";
@@ -15,7 +65,8 @@ switch ($action) {
         break;
 
     case 'update_room':
-        if (Room::update($pdo, $_POST['room_name'], $_POST['theme'], $_POST['max_capacity'], $_POST['room_id'])) {
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (Room::update($pdo, $_POST['room_name'], $_POST['theme'], $_POST['max_capacity'], $_POST['room_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Room update failed";
@@ -23,7 +74,8 @@ switch ($action) {
         break;
 
     case 'delete_room':
-        if (Room::delete($pdo, $_POST['room_id'])) {
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (Room::delete($pdo, $_POST['room_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Room deletion failed";
@@ -31,7 +83,8 @@ switch ($action) {
         break;
 
     case 'create_player':
-        if (Player::insert($pdo, $_POST['player_name'], $_POST['email'], $_POST['room_id'])) {
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (Player::insert($pdo, $_POST['player_name'], $_POST['email'], $_POST['room_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Player creation failed";
@@ -39,7 +92,8 @@ switch ($action) {
         break;
 
     case 'update_player':
-        if (Player::update($pdo, $_POST['player_name'], $_POST['email'], $_POST['player_id'])) {
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (Player::update($pdo, $_POST['player_name'], $_POST['email'], $_POST['player_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Player update failed";
@@ -47,7 +101,8 @@ switch ($action) {
         break;
 
     case 'delete_player':
-        if (Player::delete($pdo, $_POST['player_id'])) {
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (Player::delete($pdo, $_POST['player_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Player deletion failed";
