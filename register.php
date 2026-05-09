@@ -73,14 +73,40 @@
     </div>
 
     <script>
-        // Client-side password confirmation validation
+        // Client-side password validation and confirmation
         document.querySelector('form').addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
 
-            if (password !== confirmPassword) {
+            // Password strength validation
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters long');
                 e.preventDefault();
+                return;
+            }
+
+            if (!/[a-z]/.test(password)) {
+                alert('Password must contain at least one lowercase letter');
+                e.preventDefault();
+                return;
+            }
+
+            if (!/[A-Z]/.test(password)) {
+                alert('Password must contain at least one uppercase letter');
+                e.preventDefault();
+                return;
+            }
+
+            if (!/[0-9]/.test(password)) {
+                alert('Password must contain at least one number');
+                e.preventDefault();
+                return;
+            }
+
+            if (password !== confirmPassword) {
                 alert('Passwords do not match!');
+                e.preventDefault();
+                return;
             }
         });
     </script>

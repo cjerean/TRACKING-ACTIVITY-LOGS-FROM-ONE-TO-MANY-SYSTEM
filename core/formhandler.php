@@ -1,6 +1,7 @@
 <?php
 require_once 'dbconfig.php';
 require_once 'models.php';
+require_once 'validate.php';
 
 $action = $_POST['action'] ?? '';
 
@@ -8,16 +9,17 @@ switch ($action) {
     case 'register':
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_password'];
-        $username = trim($_POST['username']);
-        $email = trim($_POST['email']);
+        $username = sanitizeInput($_POST['username']);
+        $email = sanitizeInput($_POST['email']);
 
         if ($password !== $confirm_password) {
             header("Location: ../register.php?error=Passwords do not match");
             exit();
         }
 
-        if (strlen($password) < 6) {
-            header("Location: ../register.php?error=Password must be at least 6 characters");
+        $passwordValidation = validatePassword($password);
+        if ($passwordValidation !== true) {
+            header("Location: ../register.php?error=" . urlencode($passwordValidation));
             exit();
         }
 
@@ -39,7 +41,7 @@ switch ($action) {
         break;
 
     case 'login':
-        $user = User::login($pdo, $_POST['username'], $_POST['password']);
+        $user = User::login($pdo, sanitizeInput($_POST['username']), $_POST['password']);
         if ($user) {
             $_SESSION['username'] = $user['username'];
             $_SESSION['user_id'] = $user['user_id'];
@@ -57,7 +59,7 @@ switch ($action) {
 
     case 'create_room':
         $user_id = $_SESSION['user_id'] ?? null;
-        if (Room::insert($pdo, $_POST['room_name'], $_POST['theme'], $_POST['max_capacity'], $user_id)) {
+        if (Room::insert($pdo, sanitizeInput($_POST['room_name']), sanitizeInput($_POST['theme']), $_POST['max_capacity'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Room creation failed";
@@ -66,7 +68,7 @@ switch ($action) {
 
     case 'update_room':
         $user_id = $_SESSION['user_id'] ?? null;
-        if (Room::update($pdo, $_POST['room_name'], $_POST['theme'], $_POST['max_capacity'], $_POST['room_id'], $user_id)) {
+        if (Room::update($pdo, sanitizeInput($_POST['room_name']), sanitizeInput($_POST['theme']), $_POST['max_capacity'], $_POST['room_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Room update failed";
@@ -84,7 +86,7 @@ switch ($action) {
 
     case 'create_player':
         $user_id = $_SESSION['user_id'] ?? null;
-        if (Player::insert($pdo, $_POST['player_name'], $_POST['email'], $_POST['room_id'], $user_id)) {
+        if (Player::insert($pdo, sanitizeInput($_POST['player_name']), sanitizeInput($_POST['email']), $_POST['room_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Player creation failed";
@@ -93,7 +95,7 @@ switch ($action) {
 
     case 'update_player':
         $user_id = $_SESSION['user_id'] ?? null;
-        if (Player::update($pdo, $_POST['player_name'], $_POST['email'], $_POST['player_id'], $user_id)) {
+        if (Player::update($pdo, sanitizeInput($_POST['player_name']), sanitizeInput($_POST['email']), $_POST['player_id'], $user_id)) {
             header("Location: ../index.php");
         } else {
             echo "Player update failed";
