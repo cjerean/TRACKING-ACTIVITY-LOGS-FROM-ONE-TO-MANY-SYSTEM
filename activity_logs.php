@@ -1,4 +1,9 @@
 <?php
+/**
+ * Activity log viewer page.
+ *
+ * Displays recent audit entries for user actions across rooms and players.
+ */
 require_once 'core/dbconfig.php';
 
 // Check if user is logged in
@@ -9,8 +14,7 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once 'core/models.php';
 
-// Fetch more logs for the dedicated page, or implement pagination if needed
-// For now, let's fetch the top 100 recent activities
+// Fetch the latest 100 audit log entries for display
 $audit_logs = User::getAuditLog($pdo, 100);
 ?>
 

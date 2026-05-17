@@ -1,4 +1,10 @@
 <?php
+/**
+ * Application models for rooms, players, users, and audit logging.
+ *
+ * Each model method is responsible for a single database operation and
+ * optional audit logging for tracking user activity.
+ */
 
 class Room {
     public static function getAll($pdo) {

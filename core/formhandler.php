@@ -1,4 +1,10 @@
 <?php
+/**
+ * Handles form submissions for authentication and CRUD operations.
+ *
+ * This controller routes requests from the public pages to model methods
+ * and performs validation, session updates, and redirects.
+ */
 require_once 'dbconfig.php';
 require_once 'models.php';
 require_once 'validate.php';
@@ -6,6 +12,7 @@ require_once 'validate.php';
 $action = $_POST['action'] ?? '';
 
 switch ($action) {
+    // Authentication actions: register and login use shared validation methods
     case 'register':
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_password'];
@@ -57,6 +64,7 @@ switch ($action) {
         header("Location: ../login.php");
         break;
 
+    // Room and player CRUD actions with audit tracking
     case 'create_room':
         $user_id = $_SESSION['user_id'] ?? null;
         if (Room::insert($pdo, sanitizeInput($_POST['room_name']), sanitizeInput($_POST['theme']), $_POST['max_capacity'], $user_id)) {

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Search page for rooms and players.
+ *
+ * Queries both models and records search activity in the audit log.
+ */
 require_once 'core/dbconfig.php';
 
 // Check if user is logged in

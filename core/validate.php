@@ -1,7 +1,11 @@
 <?php  
+/**
+ * Shared validation utilities for user input.
+ */
 
 function validatePassword($password) {
 
+	// Enforce a minimum password policy with lowercase, uppercase, and digits
 	if (strlen($password) >= 8) {
 		$hasLower = false;
 		$hasUpper = false;
@@ -34,6 +38,7 @@ function validatePassword($password) {
 
 function sanitizeInput($data) {
 
+  // Normalize and escape user-submitted values before saving or displaying
   $data = trim($data);
   $data = stripslashes($data);
   $data = htmlspecialchars($data);

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Login page for the Nexus application.
+ *
+ * Displays error and success messages, then posts credentials to the form handler.
+ */
 require_once 'core/dbconfig.php';
 $session_message = $_SESSION['message'] ?? null;
 unset($_SESSION['message']);

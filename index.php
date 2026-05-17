@@ -1,4 +1,9 @@
 <?php
+/**
+ * Main application page for managing rooms and players.
+ *
+ * Users must be authenticated to create, update, and delete rooms or players.
+ */
 require_once 'core/dbconfig.php';
 
 // Check if user is logged in

@@ -1,3 +1,7 @@
+<!--
+    Register page for new Nexus users.
+    Validates user input in the browser and forwards registration details to the form handler.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,7 +77,9 @@
     </div>
 
     <script>
-        // Client-side password validation and confirmation
+        // Client-side registration validation.
+        // This script enforces password strength and ensures both password fields match
+        // before the form is submitted to the server.
         document.querySelector('form').addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
