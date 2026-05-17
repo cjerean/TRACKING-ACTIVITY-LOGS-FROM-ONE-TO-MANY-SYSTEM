@@ -55,6 +55,20 @@ class Room {
 
         return $result;
     }
+
+    public static function search($pdo, $keyword, $user_id = null) {
+        $sql = "SELECT * FROM rooms WHERE room_name LIKE ? OR theme LIKE ?";
+        $stmt = $pdo->prepare($sql);
+        $searchParam = "%$keyword%";
+        $stmt->execute([$searchParam, $searchParam]);
+        $results = $stmt->fetchAll();
+
+        if ($user_id) {
+            User::logAction($pdo, $user_id, 'READ', 'rooms', 0, "Searched rooms for: $keyword");
+        }
+
+        return $results;
+    }
 }
 
 class Player {
@@ -111,6 +125,20 @@ class Player {
         }
 
         return $result;
+    }
+
+    public static function search($pdo, $keyword, $user_id = null) {
+        $sql = "SELECT p.*, r.room_name FROM players p LEFT JOIN rooms r ON p.room_id = r.room_id WHERE p.player_name LIKE ? OR p.email LIKE ?";
+        $stmt = $pdo->prepare($sql);
+        $searchParam = "%$keyword%";
+        $stmt->execute([$searchParam, $searchParam]);
+        $results = $stmt->fetchAll();
+
+        if ($user_id) {
+            User::logAction($pdo, $user_id, 'READ', 'players', 0, "Searched players for: $keyword");
+        }
+
+        return $results;
     }
 }
 

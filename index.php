@@ -26,16 +26,34 @@ $rooms = Room::getAll($pdo);
 
 <body class="bg-gray-100 text-gray-800 font-sans p-6">
     <div class="max-w-6xl mx-auto space-y-8">
-        <header class="flex justify-between items-center mb-8">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
-                <h1 class="text-4xl font-bold text-gray-900">Nexus</h1>
+                <a href="index.php"><h1 class="text-4xl font-bold text-gray-900">Nexus</h1></a>
                 <p class="text-gray-600 mt-2">Room & Player Management</p>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right">
+            
+            <form action="search.php" method="GET" class="flex-1 w-full max-w-md mx-auto md:mx-4">
+                <div class="relative flex items-center">
+                    <input type="text" name="q" placeholder="Search rooms or players..." required class="w-full border border-gray-300 rounded-full px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span class="absolute left-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    <button type="submit" class="hidden">Search</button>
+                </div>
+            </form>
+
+            <div class="flex items-center gap-4 w-full md:w-auto justify-end">
+                <a href="activity_logs.php" class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Activity Logs
+                </a>
+                <div class="text-right hidden sm:block">
                     <p class="text-sm text-gray-600">Welcome,</p>
-                    <p class="font-semibold"><?php echo htmlspecialchars($_SESSION['username']); ?></p>
-                    <p class="text-xs text-gray-500"><?php echo htmlspecialchars($_SESSION['role']); ?></p>
+                    <p class="font-semibold leading-tight"><?php echo htmlspecialchars($_SESSION['username']); ?></p>
                 </div>
                 <form action="core/formhandler.php" method="post" class="inline">
                     <input type="hidden" name="action" value="logout">
@@ -198,58 +216,7 @@ $rooms = Room::getAll($pdo);
             </div>
         </main>
 
-        <?php if ($_SESSION['role'] === 'admin'): ?>
-            <section class="bg-white p-6 rounded-lg shadow-md mt-8">
-                <h2 class="text-2xl font-semibold mb-4">Recent Activity Log</h2>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full table-auto">
-                        <thead>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Table</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php
-                            $audit_logs = User::getAuditLog($pdo, 20);
-                            foreach ($audit_logs as $log):
-                            ?>
-                                <tr>
-                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                        <?php echo htmlspecialchars($log['username']); ?>
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            <?php
-                                            switch($log['action']) {
-                                                case 'INSERT': echo 'bg-green-100 text-green-800'; break;
-                                                case 'UPDATE': echo 'bg-blue-100 text-blue-800'; break;
-                                                case 'DELETE': echo 'bg-red-100 text-red-800'; break;
-                                                default: echo 'bg-gray-100 text-gray-800';
-                                            }
-                                            ?>">
-                                            <?php echo htmlspecialchars($log['action']); ?>
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                        <?php echo htmlspecialchars($log['table_name']); ?>
-                                    </td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 max-w-xs truncate">
-                                        <?php echo htmlspecialchars($log['action_details'] ?? 'N/A'); ?>
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                        <?php echo date('M j, H:i', strtotime($log['created_at'])); ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        <?php endif; ?>
+
 
         <?php if ($edit_player): ?>
             <?php $player = Player::getById($pdo, $edit_player); ?>
